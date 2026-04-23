@@ -1,46 +1,80 @@
 import streamlit as st
+import requests
+import os
+from dotenv import load_dotenv
 
-# --- MOCK DATA (Simulating the HR Database) ---
-USER_BALANCE = 12
-TEAM_BUSY_DATE = "2026-04-24"
+# Load API Key from .env file
+load_dotenv()
+API_KEY = os.getenv("GLM_API_KEY")
 
-def process_leave(text):
-    """
-    This function acts as your 'AI logic'. 
-    In a full version, this would call the Gemini GLM API.
-    """
-    # Simple extraction logic for the prototype
-    target_date = "2026-04-25" 
-    
-    if target_date == TEAM_BUSY_DATE:
-        return "❌ DENIED: Team capacity reached for April 24th. Please pick another day."
-    
-    if "urgent" in text.lower():
-        return f"✅ APPROVED (Urgent): Date {target_date} logged. New Balance: {USER_BALANCE - 1} days."
-    
-    return f"⏳ PENDING: Your request for {target_date} has been sent to HR for review."
+# USE ILMU.AI URL (Matches your console login)
+API_URL = "https://api.ilmu.ai/api/paas/v4/chat/completions"
 
-# --- STREAMLIT UI ---
-st.set_page_config(page_title="Aurora AI HR", page_icon="🤖")
+# Phase 3, Step 14: Mock Database
+leave_balances = {
+    "Daksha": 12,
+    "Lesh": 10,
+    "Meenash": 15
+}
 
+st.set_page_config(page_title="Aurora AI HR Assistant", page_icon="🤖")
 st.title("🤖 Aurora AI HR Assistant")
-st.write(f"Hello, **Daksha**! Your current leave balance: **{USER_BALANCE} days**")
+st.markdown("I can help you with leave requests and balance checks.")
 
-st.divider()
+# Initialize chat history
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-# User Input Box
-user_input = st.text_input("How can I help you today?", placeholder="e.g. I need leave on 25th April, urgent")
+# Display chat history
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
 
-if st.button("Submit Request"):
-    if user_input:
-        with st.spinner("AI is analyzing your request and checking calendar..."):
-            # Call our logic function
-            response = process_leave(user_input)
+# User Input
+if prompt := st.chat_input("How can I help you today?"):
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    # Prepare data for API
+    headers = {
+        "Authorization": f"Bearer {API_KEY}",
+        "Content-Type": "application/json"
+    }
+    
+    # Instruction for the AI (The "Agentic" part)
+    system_prompt = {
+        "role": "system", 
+        "content": "You are an HR Assistant. If a user asks for leave, ensure you get: 1. Date, 2. Duration, 3. Reason. Once you have all three pieces of info, you MUST include the exact phrase 'Processing your request...' in your reply."
+    }
+    
+    payload = {
+        "model": "glm-4", 
+        "messages": [system_prompt] + st.session_state.messages
+    }
+
+    with st.chat_message("assistant"):
+        try:
+            # Try real API call
+            response = requests.post(API_URL, headers=headers, json=payload, timeout=10)
+            response.raise_for_status()
+            full_response = response.json()['choices'][0]['message']['content']
             
-            st.success("Analysis Complete!")
-            st.info(f"**AI Response:** {response}")
-    else:
-        st.warning("Please enter your leave request details first.")
-
-st.sidebar.markdown("### Team: Aurora Architects 🏗️")
-st.sidebar.info("UM Hackathon 2026 Prototype")
+            # Step 14 Logic: Check database if AI is ready to approve
+            if "Processing your request" in full_response:
+                user_name = "Meenash" # Mocking the logged-in user
+                balance = leave_balances.get(user_name, 0)
+                full_response += f"\n\n--- \n🔍 **Database Check:** \nUser: {user_name} \nRemaining Balance: {balance} days. \n**Status: Approved** ✅"
+            
+            st.markdown(full_response)
+            st.session_state.messages.append({"role": "assistant", "content": full_response})
+            
+        except Exception as e:
+            # Safety Fallback if API fails
+            st.warning("Switching to offline mode...")
+            mock_res = "I'm having trouble connecting to my brain, but I can see you want leave. Please provide the date, duration, and reason!"
+            if "april" in prompt.lower():
+                 mock_res = f"Processing your request... \n\n🔍 **Database Check:** Your balance is {leave_balances['Meenash']} days. Approved!"
+            
+            st.markdown(mock_res)
+            st.session_state.messages.append({"role": "assistant", "content": mock_res})
