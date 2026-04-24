@@ -1,34 +1,87 @@
 # 🤖 Aurora AI HR Assistant
 
-AI-powered HR leave management chatbot built with Streamlit.
+Aurora is an AI-powered HR leave management assistant designed to simplify employee leave applications through natural conversation.
 
-## Features
-- AI Chatbot leave requests
-- Smart leave type detection
-- Monthly leave limits
-- Attendance allowance logic
-- Manager approval dashboard
-- Department manpower check
-- Employee login system
-- Leave history tracking
+## 🌟 Problem Statement
 
-## Tech Stack
-- Python
-- Streamlit
-- SQLite
-- GLM API
+Traditional leave systems are rigid, form-heavy, and frustrating. Employees must manually fill forms, choose categories, and wait for approvals.
 
-## Run Locally
+Aurora solves this with an intelligent HR chatbot.
+
+---
+
+## 🚀 Key Features
+
+### 👨‍💼 Employee Portal
+
+* AI chat-based leave requests
+* Natural language understanding
+* Auto-detect leave type
+* Smart follow-up questions
+* Leave balance tracking
+* Monthly leave limit checks
+* Attendance allowance logic
+* Leave history dashboard
+
+### 👑 Manager Portal
+
+* Approve / reject requests
+* Pending manpower conflict review
+* Exception request handling
+* Department staffing control
+
+### 🧠 AI Intelligence
+
+* Detects sick / emergency / vacation intent
+* Human-like empathetic responses
+* Suggests alternatives if rejected
+* Smart approval workflow
+
+---
+
+## 🛠 Tech Stack
+
+* Python
+* Streamlit
+* SQLite
+* GLM API
+* GitHub
+
+---
+
+## 🔐 Demo Accounts
+
+### Employee
+
+Username: meena
+Password: meena123
+
+### Manager
+
+Username: manager
+Password: admin123
+
+---
+
+## ▶ Run Locally
 
 ```bash
 pip install -r requirements.txt
 streamlit run app.py
 ```
 
-## Demo Users
+---
 
-Employee:
-meena / meena123
+## 🎯 Future Improvements
 
-Manager:
-manager / admin123
+* OCR document upload
+* Face login
+* Email notifications
+* HR analytics dashboard
+* Payroll integration
+
+---
+
+## 👥 Team Aurora Architects
+
+Built for UM Hackathon 2026.
